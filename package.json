@@ -1,0 +1,9 @@
+{
+  "name": "language-nftables",
+  "version": "0.1.0",
+  "description": "Syntax highlighting for nftables",
+  "engines": {
+    "atom": "*",
+    "node": "*"
+  }
+}

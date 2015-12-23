@@ -1,0 +1,5 @@
+# Default settings for nftables syntax fileTypes
+
+'.source.nft':
+  'editor':
+    'commentStart': '# '

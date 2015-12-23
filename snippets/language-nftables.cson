@@ -1,0 +1,22 @@
+#example snippets for NFTables
+
+'.source.nft':
+  'redefine table':
+    'prefix': 'table'
+    'body': """
+    flush table $1
+    table ${2:ip} $1{
+        $0
+    }
+    """
+
+  'define set':
+    'prefix': 'set'
+    'body': """
+    set $1{
+        type ${2:ipv4_addr};
+        elements = {
+            $0
+        }
+    }
+    """
