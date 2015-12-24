@@ -502,6 +502,13 @@
                 'name': 'string.unquoted.icmptype.reject.nft'
             }
         ]
+    'inet-proto-types':
+        'patterns': [
+            {
+                'match': '\\b(ip6|ip|icmpv6|icmp|auth|esp|comp|udp|udplite|tcp|dccp|sctp)'
+                'name': 'support.constant.inetprototype.nft'
+            }
+        ]
     'conntrack-states':
         'patterns': [
             {
@@ -514,6 +521,7 @@
             {'include': '#inet-addr'}
             {'include': '#ether-addr'}
             {'include': '#conntrack-states'}
+            {'include': '#inet-proto-types'}
             {'include': '#icmp-types'}
             {'include': '#numeric-const'}
             {'include': '#iface-name'}
