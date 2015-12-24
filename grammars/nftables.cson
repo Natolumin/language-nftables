@@ -615,7 +615,7 @@
     'set-ref':
         'patterns': [
             {
-                'match': '([@$])(\\w+)'
+                'match': '([@$])([-_\\w]+)'
                 'captures':
                     '1':
                         'name': 'keyword.operator.set.nft'
