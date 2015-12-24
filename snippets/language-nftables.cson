@@ -2,14 +2,20 @@
 
 '.source.nft':
   'redefine table':
-    'prefix': 'table'
+    'prefix': 'ftable'
     'body': """
     flush table $1
     table ${2:ip} $1{
         $0
     }
     """
-
+  'Table Block':
+    'prefix': 'table'
+    'body': """
+    table ${2:ip} $1{
+        $0
+    }
+    """
   'define set':
     'prefix': 'set'
     'body': """
