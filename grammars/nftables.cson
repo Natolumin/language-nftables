@@ -6,6 +6,14 @@
 'foldingStopMarker': '^\\s*\\}'
 
 'patterns': [
+    {
+        'match': '\\b(include)\\s+("(?:\\\\"|[^"])+")(?:;|$)'
+        'captures':
+            '1':
+                'name': 'keyword.control.include.nft'
+            '2':
+                'name': 'string.quoted.includefile.nft'
+    }
     { 'include': '#commands' }
     { 'include': '#table-def' }
     { 'include': '#comments' }
