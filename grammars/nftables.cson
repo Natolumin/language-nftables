@@ -117,12 +117,23 @@
     'set-rules':
         'patterns': [
             {
-                'match': '\\b(type)\\s+((?:ipv[46]|ether)_addr|inet_(?:proto|service)|mark)\\s*;'
+                'match': '\\b(type)\\s+((?:ipv[46]|ether)_addr|inet_(?:proto|service)|mark)([^;]*);'
                 'captures':
                     '1':
                         'name': 'keyword.function.type.nft'
                     '2':
                         'name': 'storage.type.settype.nft'
+                    '3':
+                        'patterns': [
+                            {
+                                'match': '\\s+(\\.)\\s+((?:ipv[46]|ether)_addr|inet_(?:proto|service)|mark)'
+                                'captures':
+                                    '1':
+                                        'name': 'delimiter.dot.settype.nft'
+                                    '2':
+                                        'name': 'storage.type.settype.nft'
+                            }
+                        ]
                 'name': 'entity.set.typedef.nft'
             }
             {
@@ -660,7 +671,12 @@
                         'match': ','
                         'name': 'delimiter.comma.set.nft'
                     }
+                    {
+                        'match': '\\s(\\.)\\s'
+                        'name': 'delimiter.dot.set.nft'
+                    }
                     {'include': '#any-const'}
+                    {'include': '#comments'}
                 ]
             }
         ]
