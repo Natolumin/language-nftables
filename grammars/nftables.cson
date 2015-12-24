@@ -145,7 +145,7 @@
                         'name': 'string.timespec.nft'
             }
             {
-                'begin': '(elements)\\s*(=)\\s*(\\{)'
+                'begin': '(elements)\\s*(=)'
                 'beginCaptures':
                     '1':
                         'name': 'keyword.function.elements.nft'
@@ -153,16 +153,12 @@
                         'name': 'keyword.operator.assignment.nft'
                     '3':
                         'name': 'delimiter.bracket.set.named.nft'
-                'end': '\\}'
+                'end': '(?=;|}|(?!\\\\)$)'
                 'endCaptures':
                     '0':
                         'name': 'delimiter.bracket.set.named.nft'
                 'patterns': [
-                    {
-                        'match': ','
-                        'name': 'delimiter.comma.set.nft'
-                    }
-                    {'include': '#any-const'}
+                    {'include': '#anon-set'}
                 ]
             }
         ]
@@ -590,7 +586,7 @@
             {
                 # vmap left
                 'begin': '(?<=,|{)'
-                'end': '\\s*(:)\\s+'
+                'end': '(?=})|\\s*(:)\\s+'
                 'endCaptures':
                     '1':
                         'name': 'delimiter.colon.vmap.nft'
