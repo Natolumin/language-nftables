@@ -543,6 +543,13 @@
                 'name': 'support.constant.connstate.nft'
             }
         ]
+    'arp-operations':
+        'patterns': [
+            {
+                'match': '\\b(?:r|in)?re(?:quest|ply)|nak'
+                'name': 'support.constant.arpop.nft'
+            }
+        ]
     'lone-const':
         'patterns': [
             {'include': '#inet-addr'}
@@ -550,6 +557,7 @@
             {'include': '#conntrack-states'}
             {'include': '#inet-proto-types'}
             {'include': '#icmp-types'}
+            {'include': '#arp-operations'}
             {'include': '#numeric-const'}
             {'include': '#iface-name'}
             {
