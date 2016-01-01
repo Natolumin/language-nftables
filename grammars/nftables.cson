@@ -47,7 +47,8 @@
                             {'include': '#table-spec'}
                         ]
                 'patterns': [
-                    {'include': '#table-innards'}
+                    {'include': '#chain-def'}
+                    {'include': '#set-def'}
                     {'include': '#comments'}
                 ]
             }
@@ -65,7 +66,7 @@
                         'name': 'variable.tablename.nft'
             }
         ]
-    'table-innards':
+    'chain-def':
         'patterns':[
             {
                 'begin': '\\b(chain)\\s+(\\w+)\\s*\\{'
@@ -96,7 +97,6 @@
                     { 'include': '#comments' }
                 ]
             }
-            {'include': '#set-def'}
         ]
     'set-def':
         'patterns':[
@@ -648,6 +648,7 @@
         'patterns': [
             {'include': '#const-range'}
             {'include': '#lone-const'}
+            {'include': '#set-ref'}
         ]
     'value-set-just-once':
         'patterns': [
