@@ -14,6 +14,21 @@
             '2':
                 'name': 'string.quoted.includefile.nft'
     }
+    {
+        'begin': '\\b(define)\\s+([-_\\w]+)\\s+(=)'
+        'end': '(?=;|(?!\\\\)$)'
+        'beginCaptures':
+            '1':
+                'name': 'keyword.control.define.nft'
+            '2':
+                'name': 'variable.definition.nft'
+            '3':
+                'name': 'symbol.operator.assignment.nft'
+        'patterns': [
+            {'include': '#anon-set'}
+            {'include': '#any-const'}
+        ]
+    }
     { 'include': '#commands' }
     { 'include': '#table-def' }
     { 'include': '#comments' }
