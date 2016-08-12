@@ -434,6 +434,31 @@
                 ]
             }
         ]
+    'masq-stmt':
+        'patterns': [
+          {
+            'match': '\\b(masquerade)(?:\\s+(to)\\s+(?:(:)(\\d+)(?:(-)(\\d+))?))?(?:\\s+(?:(random|persistent|fully-random)\\s*(,)\\s*)*(random|persistent|fully-random))?'
+            'captures':
+                '1':
+                    'name': 'keyword.control.masquerade.nft'
+                '2':
+                    'name': 'support.function.control.to.nft'
+                '3':
+                    'name': 'delimiter.colon.nft'
+                '4':
+                    'name': 'constant.numeric.port.nft'
+                '5':
+                    'name': 'delimiter.dash.nft'
+                '6':
+                    'name': 'constant.numeric.port.nft'
+                '7':
+                    'name': 'support.flag.nat_flag'
+                '8':
+                    'name': 'delimiter.comma.nft'
+                '9':
+                    'name': 'support.flag.nat_flag'
+          }
+        ]
     'chain-rules':
         'patterns':[
             { 'include': '#verdict-stmt'}
