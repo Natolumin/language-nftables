@@ -95,6 +95,16 @@
                             '7':
                                 'name': 'delimiter.semicolon.nft'
                     }
+                    {
+                        'match': '(policy)\\s+(accept|drop)(;)'
+                        'captures':
+                            '1':
+                                'name': 'keyword.function.policy.nft'
+                            '2':
+                                'name': 'constant.language.verdict.policy.nft'
+                            '3':
+                                'name': 'delimiter.semicolon.nft'
+                    }
                     { 'include': '#chain-rules' }
                     { 'include': '#comments' }
                 ]
