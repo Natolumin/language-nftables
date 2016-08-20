@@ -362,6 +362,7 @@
                 'end': '(?=}|;|(?!\\\\)$)'
                 'patterns':[
                     {'include': '#chain-rules'}
+                    {'include': '#verdict-map'}
                     {'include': '#value-set-just-once'}
                     {'include': '#comments'}
                 ]
