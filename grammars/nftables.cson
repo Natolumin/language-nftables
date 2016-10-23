@@ -176,6 +176,23 @@
                         'name': 'string.timespec.nft'
             }
             {
+                'match': '\\b(flags)\\s+([,\\w]+);'
+                'captures':
+                    '1':
+                        'name': 'keyword.function.flags.nft'
+                    '2':
+                        'patterns': [
+                            {
+                                'match': ','
+                                'name': 'delimiter.comma.setflags.nft'
+                            }
+                            {
+                                'match': '(timeout|interval|constant)'
+                                'name': 'string.unquoted.setflags.nft'
+                            }
+                        ]
+            }
+            {
                 'begin': '(elements)\\s*(=)'
                 'beginCaptures':
                     '1':
