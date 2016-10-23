@@ -96,7 +96,7 @@
                                 'name': 'keyword.function.priority.nft'
                             '8':
                                 'name': 'constant.numeric.priority.nft'
-                            '7':
+                            '9':
                                 'name': 'delimiter.semicolon.nft'
                     }
                     {
