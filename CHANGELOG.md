@@ -14,8 +14,8 @@
       flags interval
       elements={::/96}
     }
+    ```
 *   A couple of bugfixes
-
 
 ## 0.2.1
 *   Updated snippets
