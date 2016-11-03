@@ -78,7 +78,7 @@
                 'end': '}'
                 'patterns': [
                     {
-                        'match': '(type)\\s+(filter|route|nat)\\s+(hook)\\s+(prerouting|input|forward|output|postrouting|ingress)(?:\\s+(device)\\s+([-_\\w]{1,16}))?\\s+(priority)\\s+(-?\\d+)\\s*;'
+                        'match': '(type)\\s+(filter|route|nat)\\s+(hook)\\s+(prerouting|input|forward|output|postrouting|ingress)(?:\\s+(device)\\s+([-_\\w]{1,16}))?\\s+(priority)\\s+(-?\\d+)\\s*(?=;|(?!\\\\)$)'
                         'captures':
                             '1':
                                 'name': 'keyword.function.type.nft'
@@ -100,7 +100,7 @@
                                 'name': 'delimiter.semicolon.nft'
                     }
                     {
-                        'match': '(policy)\\s+(accept|drop)(;)'
+                        'match': '(policy)\\s+(accept|drop)(?=;|(?!\\\\)$)'
                         'captures':
                             '1':
                                 'name': 'keyword.function.policy.nft'
@@ -148,7 +148,7 @@
     'set-rules':
         'patterns': [
             {
-                'match': '\\b(type)\\s+((?:ipv[46]|ether)_addr|inet_(?:proto|service)|mark)([^;]*);'
+                'match': '\\b(type)\\s+((?:ipv[46]|ether)_addr|inet_(?:proto|service)|mark)([^;]*)(?=;|(?!\\\\)$)'
                 'captures':
                     '1':
                         'name': 'keyword.function.type.nft'
@@ -176,7 +176,7 @@
                         'name': 'string.timespec.nft'
             }
             {
-                'match': '\\b(flags)\\s+([,\\w]+);'
+                'match': '\\b(flags)\\s+([,\\w]+)(?=;|(?!\\\\)$)'
                 'captures':
                     '1':
                         'name': 'keyword.function.flags.nft'
