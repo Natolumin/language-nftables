@@ -750,6 +750,7 @@
                     { 'include': '#chain-rules'}
                 ]
             }
+            {'include': '#verdict-map'}
             {
                 #lone-const
                 # (?<=\\s instead of \\b because of @ in set-ref)
