@@ -456,6 +456,34 @@
                 ]
             }
         ]
+    'fib-stmt':
+        'patterns': [
+            {
+                'begin': '\\b(fib)\\s+((?:saddr|daddr|mark|iif|oif|\\.|\\s+)+)\\b(oif|oifname|type)'
+                'beginCaptures':
+                    '1':
+                        'name': 'storage.type.fib.match.nft'
+                    '2':
+                        'patterns':[
+                            {
+                                'match': '\\b(saddr|daddr|mark|iif|oif)'
+                                'name': 'support.function.match.fibflag.nft'
+                            }
+                            {
+                                'match': '(\\.)'
+                                'name': 'delimiter.dot.fibflag.nft'
+                            }
+                        ]
+                    '3':
+                        'name': 'constant.language.fibresult.nft'
+                'end': '(?=}|;|(?!\\\\)$)'
+                'patterns': [
+                    {'include': '#value-set-just-once'}
+                    {'include': '#chain-rules'}
+                    {'include': '#comments'}
+                ]
+            }
+        ]
     'chain-rules':
         'patterns':[
             { 'include': '#verdict-stmt'}
@@ -473,6 +501,7 @@
             { 'include': '#redir-stmt'}
             { 'include': '#dup-stmt'}
             { 'include': '#set-stmt'}
+            { 'include': '#fib-stmt'}
             { 'include': '#comments'}
         ]
     'ipv6':
