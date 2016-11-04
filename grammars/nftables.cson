@@ -484,6 +484,23 @@
                 ]
             }
         ]
+    'rt-stmt':
+        'patterns': [
+            {
+                'begin': '\\b(rt)\\s+(classid|nexthop)'
+                'beginCaptures':
+                    '1':
+                        'name': 'storage.type.rt.match.nft'
+                    '2':
+                        'name': 'support.function.match.rtkey.nft'
+                'end': '(?=}|;|(?!\\\\)$)'
+                'patterns': [
+                    {'include': '#value-set-just-once'}
+                    {'include': '#chain-rules'}
+                    {'include': '#comments'}
+                ]
+            }
+        ]
     'chain-rules':
         'patterns':[
             { 'include': '#verdict-stmt'}
@@ -502,6 +519,7 @@
             { 'include': '#dup-stmt'}
             { 'include': '#set-stmt'}
             { 'include': '#fib-stmt'}
+            { 'include': '#rt-stmt'}
             { 'include': '#comments'}
         ]
     'ipv6':
