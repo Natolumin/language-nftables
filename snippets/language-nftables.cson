@@ -26,3 +26,12 @@
         }
     }
     """
+  'Define Chain':
+    'prefix': 'chain'
+    'body': """
+    chain $1{
+        type ${2:filter} hook ${3:input} priority ${4:0}
+        policy ${5:drop}
+        $0
+    }
+    """
