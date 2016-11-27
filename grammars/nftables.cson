@@ -6,768 +6,154 @@
 'foldingStopMarker': '^\\s*\\}'
 
 'patterns': [
-    {
-        'match': '\\b(include)\\s+("(?:\\\\"|[^"])+")(?:;|$)'
-        'captures':
-            '1':
-                'name': 'keyword.control.include.nft'
-            '2':
-                'name': 'string.quoted.includefile.nft'
-    }
-    {
-        'begin': '\\b(define)\\s+([-_\\w]+)\\s*(=)'
-        'end': '(?=;|(?!\\\\)$)'
-        'beginCaptures':
-            '1':
-                'name': 'keyword.control.define.nft'
-            '2':
-                'name': 'variable.definition.nft'
-            '3':
-                'name': 'symbol.operator.assignment.nft'
-        'patterns': [
-            {'include': '#anon-set'}
-            {'include': '#any-const'}
-        ]
-    }
-    { 'include': '#commands' }
-    { 'include': '#table-def' }
-    { 'include': '#comments' }
-    { 'include': '#other-invalid'}
+    { 'include': '#common_block' }
+    { 'include': '#stmt_separator' }
+    { 'include': '#base_cmd' }
 ]
 
 'repository':
-    'table-def':
-        'patterns':[
-            {
-                'begin': '\\b(table.*){'
-                'end': '}'
-                'beginCaptures':
-                    '1':
-                        'patterns': [
-                            {'include': '#table-spec'}
-                        ]
-                'patterns': [
-                    {'include': '#chain-def'}
-                    {'include': '#set-def'}
-                    {'include': '#comments'}
-                ]
-            }
-        ]
-    'table-spec':
+    'base_cmd':
         'patterns': [
-            {
-                'match': '\\b(table)\\s+(?:(ip6|ip|inet|arp|bridge|netdev)\\s+)?(\\w+)'
-                'captures':
-                    '1':
-                        'name': 'storage.type.table.nft'
-                    '2':
-                        'name': 'constant.language.addrfam.nft'
-                    '3':
-                        'name': 'variable.tablename.nft'
-            }
+          {
+            'begin': '(add)?'
+	    'beginCaptures':
+          }
         ]
-    'chain-def':
-        'patterns':[
-            {
-                'begin': '\\b(chain)\\s+([-_\\w\\d]+)\\s*\\{'
-                'beginCaptures':
-                    '1':
-                        'name': 'storage.type.chain.nft'
-                    '2':
-                        'name': 'variable.chainname.nft'
-                'end': '}'
-                'patterns': [
-                    {
-                        'match': '(type)\\s+(filter|route|nat)\\s+(hook)\\s+(prerouting|input|forward|output|postrouting|ingress)(?:\\s+(device)\\s+([-_\\w]{1,16}))?\\s+(priority)\\s+(-?\\d+)\\s*(?=;|(?!\\\\)$)'
-                        'captures':
-                            '1':
-                                'name': 'keyword.function.type.nft'
-                            '2':
-                                'name': 'constant.language.chain.nft'
-                            '3':
-                                'name': 'keyword.function.hook.nft'
-                            '4':
-                                'name': 'constant.language.hook.nft'
-                            '5':
-                                'name': 'keyword.function.device.nft'
-                            '6':
-                                'name': 'string.unquoted.ifname.nft'
-                            '7':
-                                'name': 'keyword.function.priority.nft'
-                            '8':
-                                'name': 'constant.numeric.priority.nft'
-                            '9':
-                                'name': 'delimiter.semicolon.nft'
-                    }
-                    {
-                        'match': '(policy)\\s+(accept|drop)(?=;|(?!\\\\)$)'
-                        'captures':
-                            '1':
-                                'name': 'keyword.function.policy.nft'
-                            '2':
-                                'name': 'constant.language.verdict.policy.nft'
-                            '3':
-                                'name': 'delimiter.semicolon.nft'
-                    }
-                    { 'include': '#chain-rules' }
-                    { 'include': '#comments' }
-                ]
-            }
-        ]
-    'set-def':
-        'patterns':[
-            {
-                'begin': '\\b(set\\b.*)\\{'
-                # a simple '}' fucks up when everything is on the same line
-                'end': '\\}\\s*(?=;|(?!\\\\)$)'
-                'name': 'entity.set.definition.nft'
-                'beginCaptures':
-                    '1':
-                        'patterns': [
-                            {'include': '#set-spec'}
-                        ]
-                'patterns': [
-                    {'include': '#set-rules'}
-                    {'include': '#comments'}
-                ]
-            }
-        ]
-    'set-spec':
+    'stmt_expr':
         'patterns': [
-            {
-                'match': '\\b(set)\\s+(?:([-_\\w]{1,16})\\s+)?([-_\\w]{1,16})'
-                'captures':
-                    '1':
-                        'name': 'storage.type.set.nft'
-                    '2':
-                        'name': 'variable.tablename.nft'
-                    '3':
-                        'name': 'variable.setname.nft'
-            }
+            { 'include': '#map_stmt_expr' }
+            { 'include': '#multiton_rhs_expr' }
+            { 'include': '#primary_rhs_expr' }
         ]
-    'set-rules':
+    'rhs_expr':
         'patterns': [
-            {
-                'match': '\\b(type)\\s+((?:ipv[46]|ether)_addr|inet_(?:proto|service)|mark)([^;]*)(?=;|(?!\\\\)$)'
-                'captures':
-                    '1':
-                        'name': 'keyword.function.type.nft'
-                    '2':
-                        'name': 'storage.type.settype.nft'
-                    '3':
-                        'patterns': [
-                            {
-                                'match': '\\s+(\\.)\\s+((?:ipv[46]|ether)_addr|inet_(?:proto|service)|mark)'
-                                'captures':
-                                    '1':
-                                        'name': 'delimiter.dot.settype.nft'
-                                    '2':
-                                        'name': 'storage.type.settype.nft'
-                            }
-                        ]
-                'name': 'entity.set.typedef.nft'
-            }
-            {
-                'match': '\\b(gc-interval|timeout)\\s+([^#]*)(?=;|(?!\\\\)$)'
-                'captures':
-                    '1':
-                        'name': 'keyword.function.parameters.nft'
-                    '2':
-                        'name': 'string.timespec.nft'
-            }
-            {
-                'match': '\\b(flags)\\s+([,\\w]+)(?=;|(?!\\\\)$)'
-                'captures':
-                    '1':
-                        'name': 'keyword.function.flags.nft'
-                    '2':
-                        'patterns': [
-                            {
-                                'match': ','
-                                'name': 'delimiter.comma.setflags.nft'
-                            }
-                            {
-                                'match': '(timeout|interval|constant)'
-                                'name': 'string.unquoted.setflags.nft'
-                            }
-                        ]
-            }
-            {
-                'begin': '(elements)\\s*(=)'
-                'beginCaptures':
-                    '1':
-                        'name': 'keyword.function.elements.nft'
-                    '2':
-                        'name': 'keyword.operator.assignment.nft'
-                    '3':
-                        'name': 'delimiter.bracket.set.named.nft'
-                'end': '(?=;|}|(?!\\\\)$)'
-                'endCaptures':
-                    '0':
-                        'name': 'delimiter.bracket.set.named.nft'
-                'patterns': [
-                    {'include': '#anon-set'}
-                ]
-            }
+            { 'include': '#concat_rhs_expr' }
+            { 'include': '#multiton_rhs_expr' }
+            { 'include': '#set_expr' }
         ]
-    'rule-spec':
-        'patterns':[
-            {
-                'begin': '\\b(rule)\\s+([-_\\w]{1,16})\\s+([-_\\w]{1,16})'
-                'beginCaptures':
-                    '1':
-                        'name': 'keyword.function.rule.nft'
-                    '2':
-                        'name': 'variable.tablename.nft'
-                    '3':
-                        'name': 'variable.chainname.nft'
-                'end': '(?=;|(?!\\\\)$)'
-                'patterns': [
-                    { 'include': '#chain-rules' }
-                ]
-            }
-        ]
-    'element-spec':
+    'map_stmt_expr':
         'patterns': [
-            {
-                'begin': '\\b(element)\\s+([-_\\w]{1,16})\\s+([-_\\w]{1,16})'
-                'beginCaptures':
-                    '1':
-                        'name': 'keyword.function.element.nft'
-                    '2':
-                        'name': 'variable.tablename.nft'
-                    '3':
-                        'name': 'variable.setname.nft'
-                'end': '(?=;|(?!\\\\)$)'
-                'patterns':[
-                    {'include': '#anon-set'}
-                ]
-            }
+          {
+            'begin': '(.*)\\s+(map)\\s+'
+            'beginCaptures':
+                '1':
+                    'patterns': [
+                        { 'include': '#primary_expr' }
+                        {
+                            'match': '\\.'
+                            'name': 'delimiter.dot.map.nft'
+                        }
+                    ]
+                '2': 'storage.type.map.nft'
+            'end': '(?=}|;|(?!\\\\)$)'
+          }
         ]
-    'comments':
-        'patterns':[
-            {
-                'begin': '#'
-                'end': '(?=$)'
-                'name': 'comment.line.number-sign.nft'
-            }
-        ]
-    'commands':
+    'multiton_rhs_expr':
         'patterns': [
-            {
-                # TODO: separate commands in multiple patterns
-                'begin': '\\b(add|replace|create|insert|delete|list|flush|rename|export|monitor|describe)'
-                'end': ';|(?!\\\\)$'
-                'patterns': [
-                    {'include': '#table-def'}
-                    {'include': '#table-spec'}
-                    {'include': '#rule-spec'}
-                    {'include': '#element-spec'}
-                    {'include': '#set-def'}
-                    {'include': '#set-spec'}
-                ]
-                'beginCaptures':
-                    '1':
-                        'name': 'keyword.function.action.nft'
-            }
+          { 'include': '#prefix_rhs_expr' }
+          { 'include': '#range_rhs_expr' }
+          {
+            'match': '\\*'
+            'name': 'invalid.star.nft'
+          }
         ]
-    'verdict-stmt':
+    'prefix_rhs_expr':
         'patterns': [
-            {
-                'match': '\\b(accept|drop|continue|return)|(jump|goto)\\s+([-_\\w]+)'
-                'captures':
-                    '1':
-                        'name': 'keyword.control.verdict.stmt.nft'
-                    '2':
-                        'name': 'keyword.control.verdict.stmt.nft'
-                    '3':
-                        'name': 'variable.label.chain.identifier.nft'
-            }
+          {
+            'begin': ''
+            'patterns': [{ 'include': '#basic_rhs_expr' }]
+            'end': '(/)(\\d+)'
+          }
         ]
-    'counter-stmt':
+    'basic_rhs_expr':
         'patterns': [
-            {
-                'match': '\\b(counter)((?:\\s+(?:packets|bytes)\\s+(?:\\d+))*)'
-                'captures':
-                    '1':
-                        'name': 'keyword.modifier.counter.stmt.nft'
-                    '2':
-                        'patterns': [
-                            {
-                                'match': '\\b(packets|bytes)\\s+(\\d+)'
-                                'captures':
-                                    '1':
-                                        'name': 'support.function.counter.type.nft'
-                                    '2':
-                                        'name': 'constant.numeric.counter.value.nft'
-                            }
-                        ]
-            }
+          {
+            'match': '\\||^|&|<<|>>|'
+            'name': 'keyword.operator.logic.nft'
+          }
+          { 'include': '#primary_rhs_expr' }
         ]
-    'log-stmt':
+    'range_rhs_expr':
         'patterns': [
-            {
-                'match': '\\b(log)((?:\\s+(prefix|group|snaplen|queue-threshold|level)\\s+(?:\\w+|".+"))*)'
-                'captures':
-                    '1':
-                        'name': 'keyword.modifier.log.stmt.nft'
-                    '2':
-                        'patterns': [
-                            {
-                                'match': '\\b(prefix)\\s+(?:(\\w+)|(")((?:\\\\"|[^"])+)("))'
-                                'captures':
-                                    '1':
-                                        'name': 'support.function.log.prefix.nft'
-                                    '2':
-                                        'name': 'string.unquoted.log.prefix.nft'
-                                    '3':
-                                        'name': 'string.quoted.punctuation.string.log.prefix.nft'
-                                    '4':
-                                        'name': 'string.quoted.log.prefix.nft'
-                                    '5':
-                                        'name': 'string.quoted.punctuation.string.log.prefix.nft'
-                            }
-                            {
-                                'match': '\\b(group|snaplen|queue-threshold)\\s+(\\d+)'
-                                'captures':
-                                    '1':
-                                        'name': 'support.function.log.nft'
-                                    '2':
-                                        'name': 'constant.numeric.log.nft'
-                            }
-                            {
-                                'match': '\\b(level)\\s+(emerg|alert|crit|warn|notice|info|debug)'
-                                'captures':
-                                    '1':
-                                        'name': 'support.function.log.level.nft'
-                                    '2':
-                                        'name': 'constant.language.log.level.nft'
-                            }
-                        ]
-            }
+          {
+            'match': '(.*)(-)(.*)'
+            'captures':
+                '1':
+                    'patterns': [{ 'include': '#basic_rhs_expr' }]
+                '2':
+                    'name': 'delimiter.hyphen.range.nft'
+                '3':
+                    'patterns': [{ 'include': '#basic_rhs_expr' }]
+          }
         ]
-    'meta-stmt':
-        'patterns':[
-            {
-                'begin': '\\b(meta)\\s+(length|nfproto|l4proto|protocol|priority)|(meta\\s+)?(mark|(?:iif|oif)(?:type|name|group)?|sk[ug]id|nftrace|[io]briport|pkttype|cpu|cgroup)'
-                'beginCaptures':
-                    '1':
-                        'name': 'storage.type.match.meta.nft'
-                    '2':
-                        'name': 'support.function.metakey.qualified.nft'
-                    '3':
-                        'name': 'storage.type.match.meta.nft'
-                    '4':
-                        'name': 'support.function.metakey.unqualified.nft'
-                'end': '(?=}|;|(?!\\\\)$)'
-                'patterns':[
-                    {'include': '#chain-rules'}
-                    {'include': '#verdict-map'}
-                    {'include': '#value-set-just-once'}
-                    {'include': '#comments'}
-                ]
-            }
-        ]
-    'ct-stmt':
+    'concat_rhs_expr':
         'patterns': [
-            {
-                'begin': '\\b(ct)\\s+(state|direction|status|mark|expiration|helper|l3proto|saddr|daddr|protocol|proto-(?:src|dst)|label)'
-                'beginCaptures':
-                    '1':
-                        'name': 'storage.type.match.ct.nft'
-                    '2':
-                        'name': 'support.function.ctkey.nft'
-                'end': '(?=}|;|(?!\\\\)$)'
-                'patterns': [
-                    {'include': '#chain-rules'}
-                    {'include': '#value-set-just-once'}
-                    {'include': '#comments'}
-                ]
-            }
+          {
+            'match': '\\.'
+            'name': 'delimiter.concat.dot.nft'
+          }
         ]
-    'reject-stmt':
+    'primary_rhs_expr':
         'patterns': [
-            {
-                'match': '\\b(reject)(?:\\s+(with)\\s+(?:(tcp\\s+reset)|((?:icmp|icmpv6|icmpx)\\s+type)\\s+([-\\w]+)))?'
-                'captures':
-                    '1':
-                        'name': 'keyword.control.verdict.stmt.nft'
-                    '2':
-                        'name': 'support.function.with.nft'
-                    '3':
-                        'name': 'constant.language.rejecttype.nft'
-                    '4':
-                        'name': 'constant.language.rejecttype.nft'
-                    '5':
-                        'patterns': [
-                            {'include': '#reject-icmp-types'}
-                            {'include': '#numeric-const'}
-                        ]
-            }
+          {
+            'match': 'ether|vlan'
+            'name': ''
+          }
+          {
+            'match': 'ip6?|icmp(v6)?|arp|comp'
+            'name': ''
+          }
+          {
+            'match': 'tcp|udp|udplite|esp|ah|dccp|sctp'
+            'name': ''
+          }
+          {
+            'match': 'redirect|(s|d)nat|ecn'
+            'name': ''
+          }
+          { 'include': '#symbol_expr'}
         ]
-    'payload-stmt':
+    'symbol_expr':
         'patterns': [
-            {
-                'begin': '\\b(ether|vlan|arp|ip6|ip|icmpv6|icmp|auth|esp|comp|udp|udplite|tcp|dccp|sctp)(?:\\s+([-a-z]+))?'
-                'beginCaptures':
-                    '1':
-                        'name': 'storage.type.payload.match.nft'
-                    '2':
-                        'patterns':[
-
-                            {
-                                'match': '\\b([sd]addr|gateway)(?=\\b)'
-                                'name': 'support.function.match.adr.nft'
-                            }
-                            {
-                                'match': '\\b([hp]?type)'
-                                'name': 'support.function.match.type.nft'
-                            }
-                            {
-                                'match': '\\b(id|cfi|pcp)(?=\\b)'
-                                'name': 'support.function.match.vlanhdr.nft'
-                            }
-                            {
-                                'match': '\\b([hp]?len)(?=\\b)'
-                                'name': 'support.function.match.arp.len.nft'
-                            }
-                            {
-                                'match': '\\b(operation)(?=\\b)'
-                                'name': 'support.function.match.arpop.nft'
-                            }
-                            {
-                                'match': '\\b(version|hdrlength|tos|length|frag-off|ttl|protocol|checksum|code|seq|mtu|flowlabel|nexthdr|hoplimit|param-problem|max-delay)(?=\\b)'
-                                'name': 'support.function.match.ip.num.nft'
-                            }
-                            {
-                                'match': '\\b([sd]port)(?=\\b)'
-                                'name': 'support.function.match.l4proto.port.nft'
-                            }
-                            {
-                                'match': '\\b(spi|reserved)(?=\\b)'
-                                'name': 'support.function.match.ipsec.nft'
-                            }
-                        ]
-                'end': '(?=}|;|(?!\\\\)$)'
-                'patterns': [
-                    {'include': '#verdict-map'}
-                    {'include': '#value-set-just-once'}
-                    {'include': '#chain-rules'}
-                ]
-            }
+          {
+            'match': '(@)([a-zA-Z_.][a-zA-Z0-9/\-_\.]*)'
+            'name': 'meta.symbol_expr.nft'
+            'captures':
+                '1':
+                    'name': 'storage.modifier.atsymbol.nft'
+                '2':
+                    'name': 'variable.other.nft'
+          }
+          { 'include': '#string' }
+          { 'include': '#variable_expr'}
         ]
-    'fib-stmt':
+    'variable_expr':
         'patterns': [
-            {
-                'begin': '\\b(fib)\\s+((?:saddr|daddr|mark|iif|oif|\\.|\\s+)+)\\b(oif|oifname|type)'
-                'beginCaptures':
-                    '1':
-                        'name': 'storage.type.fib.match.nft'
-                    '2':
-                        'patterns':[
-                            {
-                                'match': '\\b(saddr|daddr|mark|iif|oif)'
-                                'name': 'support.function.match.fibflag.nft'
-                            }
-                            {
-                                'match': '(\\.)'
-                                'name': 'delimiter.dot.fibflag.nft'
-                            }
-                        ]
-                    '3':
-                        'name': 'constant.language.fibresult.nft'
-                'end': '(?=}|;|(?!\\\\)$)'
-                'patterns': [
-                    {'include': '#value-set-just-once'}
-                    {'include': '#chain-rules'}
-                    {'include': '#comments'}
-                ]
-            }
+          {
+            'match': '(\\$)([-_\\w]+)'
+            'captures':
+                '1':
+                    'name': 'storage.modifier.dollarsymbol.nft'
+                '2':
+                    'name': 'variable.other.nft'
+          }
         ]
-    'rt-stmt':
+    'string':
         'patterns': [
-            {
-                'begin': '\\b(rt)\\s+(classid|nexthop)'
-                'beginCaptures':
-                    '1':
-                        'name': 'storage.type.rt.match.nft'
-                    '2':
-                        'name': 'support.function.match.rtkey.nft'
-                'end': '(?=}|;|(?!\\\\)$)'
-                'patterns': [
-                    {'include': '#value-set-just-once'}
-                    {'include': '#chain-rules'}
-                    {'include': '#comments'}
-                ]
-            }
+          {
+            'match': '"[^"]"'
+            'name': 'string.quoted.double'
+          }
+          {
+            'match': '[a-zA-Z_.][a-zA-Z0-9/\-_\.]*'
+            'name': 'string.unquoted.nft'
+          }
+          {
+            'match': '[a-zA-Z_.][a-zA-Z0-9/\-_\.]*(\\*|\\\\*)'
+            'name': 'string.other.nft'
+          }
         ]
-    'chain-rules':
-        'patterns':[
-            { 'include': '#verdict-stmt'}
-            { 'include': '#match-stmt'}
-            { 'include': '#counter-stmt'}
-            { 'include': '#payload-stmt'}
-            { 'include': '#meta-stmt'}
-            { 'include': '#log-stmt'}
-            { 'include': '#limit-stmt'}
-            { 'include': '#reject-stmt'}
-            { 'include': '#nat-stmt'}
-            { 'include': '#queue-stmt'}
-            { 'include': '#ct-stmt'}
-            { 'include': '#masq-stmt'}
-            { 'include': '#redir-stmt'}
-            { 'include': '#dup-stmt'}
-            { 'include': '#set-stmt'}
-            { 'include': '#fib-stmt'}
-            { 'include': '#rt-stmt'}
-            { 'include': '#comments'}
-        ]
-    'ipv6':
-        'patterns':[
-            {
-                # https://stackoverflow.com/a/17871737
-                'match': '((?:[0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|[fF][eE]80:(?::[0-9a-fA-F]{0,4}){0,4}((%)[0-9a-zA-Z]{1,15})|::([fF]{4}(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(?=\\s)'
-                'captures':
-                    '1':
-                        'name': 'constant.numeric.ipv6.nft'
-                    '2':
-                        'name': 'string.unquoted.ifname.nft'
-                    '3':
-                        'name': 'keyword.operator.ifacespec.nft'
-            }
-        ]
-    'ipv4':
-        'patterns':[
-            {
-                'match': '\\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
-                'name': 'constant.numeric.ipv4.nft'
-            }
-        ]
-    'ip-mask':
-        'patterns': [
-            {
-                'match': '\\b([\\da-fA-F.:]+(?:%\\w+)?)(/)(\\d+)'
-                'captures':
-                    '1':
-                        'patterns': [
-                            {'include': '#ipv6'}
-                            {'include': '#ipv4'}
-                        ]
-                    '2':
-                        'name': 'keyword.operator.mask.nft'
-                    '3':
-                        'name': 'constant.numeric.mask.nft'
-            }
-        ]
-    'inet-addr':
-        'patterns': [
-            {'include': '#ip-mask'}
-            {'include': '#ipv6'}
-            {'include': '#ipv4'}
-        ]
-    'iface-name':
-        'patterns': [
-            {
-                'match': '[a-z_0-9]{1,15}'
-                'name': 'string.unquoted.ifname.nft'
-            }
-        ]
-    'icmp-types':
-        'patterns': [
-            {
-                'match': '\\b((?:echo|timestamp|info|address-mask)-re(?:quest|ply)|destination-unreachable|source-quench|redirect|time-exceeded|parameter-problem)'
-                'name': 'string.unquoted.icmptype.nft'
-            }
-            {
-                'match': '\\b(destination-unreachable|packet-too-big|time-exceeded|param-problem|echo-re(?:quest|ply)|mld-listener-(?:query|report|reduction)|nd-(?:router|neighbor)-(?:solicit|advert)|nd-redirect|router-renumbering)'
-                'name': 'string.unquoted.icmpv6type.nft'
-            }
-        ]
-    'reject-icmp-types':
-        'patterns': [
-            {
-                'match': '\\b(admin-prohibited|(?:port|host)-unreachable|no-route)'
-                'name': 'string.unquoted.icmpxtype.reject.nft'
-            }
-            {
-                'match': '\\b(admin-prohibited|(?:port|addr)-unreachable|no-route)'
-                'name': 'string.unquoted.icmpv6type.reject.nft'
-            }
-            {
-                'match': '\\b(admin-prohibited|(?:port|net|host)-unreachable)'
-                'name': 'string.unquoted.icmptype.reject.nft'
-            }
-        ]
-    'inet-proto-types':
-        'patterns': [
-            {
-                'match': '\\b(ip6|ip|icmpv6|icmp|auth|esp|comp|udp|udplite|tcp|dccp|sctp)'
-                'name': 'support.constant.inetprototype.nft'
-            }
-        ]
-    'conntrack-states':
-        'patterns': [
-            {
-                'match': '\\b(new|established|related|invalid|untracked)(?=\\b)'
-                'name': 'support.constant.connstate.nft'
-            }
-        ]
-    'arp-operations':
-        'patterns': [
-            {
-                'match': '\\b(?:r|in)?re(?:quest|ply)|nak'
-                'name': 'support.constant.arpop.nft'
-            }
-        ]
-    'lone-const':
-        'patterns': [
-            {'include': '#inet-addr'}
-            {'include': '#ether-addr'}
-            {'include': '#conntrack-states'}
-            {'include': '#inet-proto-types'}
-            {'include': '#icmp-types'}
-            {'include': '#arp-operations'}
-            {'include': '#numeric-const'}
-            {'include': '#iface-name'}
-            {
-                'match': '\\b(\\w+)(?=\\b)'
-                'name': 'string.unquoted.identifier.nft'
-            }
-        ]
-    'ether-addr':
-        'patterns': [
-            {
-                'match': '([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})'
-                'name': 'constant.numeric.ethaddr.nft'
-            }
-        ]
-    'numeric-const':
-        'patterns': [
-            {
-                'match': '\\b(0[xX])([0-9A-Fa-f]+)(?=\\b)'
-                'captures':
-                    '1':
-                        'name': 'constant.symbol.hexprefix.nft'
-                    '2':
-                        'name': 'constant.numeric.hex.nft'
-            }
-            {
-                'match': '\\b\\d+'
-                'name': 'constant.numeric.nft'
-            }
-        ]
-    'const-range':
-        'patterns': [
-            {
-                'match': '([:./\\da-fA-F]+)(-)([:./\\da-fA-F]+)'
-                'captures':
-                    '1':
-                        'patterns': [{'include': '#lone-const'}]
-                    '2':
-                        'name': 'delimiter.hyphen.range.nft'
-                    '3':
-                        'patterns': [{'include': '#lone-const'}]
-                'name': 'entity.range.nft'
-            }
-        ]
-    'verdict-map':
-        'patterns': [
-            {
-                'begin': '\\b(vmap)\\s*({)'
-                'beginCaptures':
-                    '1':
-                        'name': 'keyword.function.vmap.nft'
-                    '2':
-                        'name': 'delimiter.bracket.vmap.nft'
-                'end': '}'
-                'endCaptures':
-                    '0':
-                        'name': 'delimiter.bracket.vmap.nft'
-                'name': 'entity.vmap.nft'
-                'patterns': [
-                    {
-                        'match': ','
-                        'name': 'delimiter.comma.vmap.nft'
-                    }
-                    { 'include': '#vmap-entry'}
-                ]
-            }
-        ]
-    'vmap-entry':
-        'patterns': [
-            {
-                # vmap left
-                'begin': '(?<=,|{)'
-                'end': '(?=})|\\s*(:)\\s+'
-                'endCaptures':
-                    '1':
-                        'name': 'delimiter.colon.vmap.nft'
-                'patterns': [
-                    {'include': '#any-const'}
-                ]
-            }
-            {
-                #vmap right
-                'begin': '(?<=:\\s)'
-                'end': '(?=,|})'
-                'patterns': [
-                    { 'include': '#verdict-stmt' }
-                ]
-
-            }
-        ]
-    'set-ref':
-        'patterns': [
-            {
-                'match': '([@$])([-_\\w]+)'
-                'captures':
-                    '1':
-                        'name': 'keyword.operator.set.nft'
-                    '2':
-                        'name': 'variable.parameter.set.name.nft'
-            }
-        ]
-    'value-set':
-        'patterns': [
-            { 'include': '#set-ref'}
-            { 'include': '#anon-set' }
-            { 'include': '#any-const'}
-        ]
-    'any-const':
-        'patterns': [
-            {'include': '#const-range'}
-            {'include': '#lone-const'}
-            {'include': '#set-ref'}
-        ]
-    'value-set-just-once':
-        'patterns': [
-            {
-                #anon-set
-                'begin': '(?=\\{)'
-                'end': '(?=}|;|(?!\\\\)$)'
-                'patterns': [
-                    { 'include': '#anon-set' }
-                    { 'include': '#chain-rules'}
-                ]
-            }
-            {'include': '#verdict-map'}
-            {
-                #lone-const
-                # (?<=\\s instead of \\b because of @ in set-ref)
-                'begin': '(?<=\\s)([^ ]+)'
-                'beginCaptures':
-                    '1':
-                        'patterns': [
-                            {'include': '#set-ref'}
-                            {'include': '#any-const'}
-                        ]
-                'end': '(?=}|;|(?!\\\\)$)'
-                'patterns': [
-                    {'include': '#chain-rules'}
-                ]
-            }
-        ]
-    'anon-set':
+    'set_expr':
         'patterns': [
             {
                 'begin': '\\{'
@@ -781,19 +167,51 @@
                         'match': ','
                         'name': 'delimiter.comma.set.nft'
                     }
-                    {
-                        'match': '\\s(\\.)\\s'
-                        'name': 'delimiter.dot.set.nft'
-                    }
-                    {'include': '#any-const'}
-                    {'include': '#comments'}
+                    { 'include': '#set_list_member_expr' }
                 ]
             }
         ]
-    'other-invalid':
+    'set_list_member_expr':
         'patterns': [
-            {
-                'match': '[^ ]'
-                'name': 'invalid.illegal.nft'
-            }
+          {
+            'match': '(.*)(:)(.*)'
+            'captures':
+                '1':
+                    'patterns': [{ 'include': '#set_elem_expr' }]
+                '2':
+                    'name': 'delimiter.colon.set.nft'
+                '3':
+                    'patterns': [{ 'include': '#set_rhs_expr' }]
+          }
+          { 'include': '#set_expr' }
+          { 'include': '#set_elem_expr' }
         ]
+    'set_rhs_expr':
+        'patterns': [
+          { 'include': '#concat_rhs_expr' }
+          { 'include': '#verdict_expr' }
+        ]
+    'set_elem_expr':
+        'patterns': [
+          { 'include': '#concat_rhs_expr' }
+          { 'include': '#multiton_rhs_expr' }
+          { 'include': '#set_elem_option' }
+        ]
+    'set_elem_option':
+        'patterns': [
+          {
+            'match': '\\b(timeout)([a-zA-Z_.][a-zA-Z0-9/\-_\.]*)'
+            'captures':
+                '1':
+                    'name': 'support.function.timeout.nft'
+                '2':
+                    'name': 'string.unquoted.timeout.nft'
+          }
+          { 'include': '#comments' }
+        ]
+
+# Useful references for leaves and regexps:
+# newline delimiter:
+# 'end': '(?=}|;|(?!\\\\)$)'
+# "string":
+# '[a-zA-Z_.][a-zA-Z0-9/\-_\.]*'
