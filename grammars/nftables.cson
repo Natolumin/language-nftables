@@ -191,6 +191,7 @@
     'table_block':
         'name': 'meta.block.table'
         'patterns': [
+          { 'include': '#comments' }
           { 'include': '#table_options'}
           {
             'name': 'meta.definition.chain.nft'
@@ -252,6 +253,7 @@
                 'name': 'variable.chainname.nft'
     'chain_block':
         'patterns': [
+            { 'include': '#comments' }
             { 'include': '#hook_spec' }
             { 'include': '#policy_spec' }
             { 'include': '#rule' }
@@ -297,6 +299,7 @@
                 'name': 'variable.setname.nft'
     'set_block':
         'patterns': [
+          { 'include': '#comments' }
           { 'include': '#set_mechanism' }
           {
             'match': '(type)\\s+([a-zA-Z_\\.][a-zA-Z0-9/\\-_\\.]*)(?:\\s+(\\.)\\s+([a-zA-Z_\\.][a-zA-Z0-9/\\-_\\.]*))*'
@@ -386,25 +389,17 @@
     'verdict_stmt':
         'patterns': [
           { 'include': '#verdict_expr' }
-          { #verdict_map_stmt(leaf) (multiline)
-            'begin': '([^;]*)\\s+(vmap)(?=.*{)'
+          { #verdict_map_stmt(leaf)
+            'begin': '([^;]*)\\s+(vmap)'
+            'name': 'meta.stmt.verdict'
             'beginCaptures':
                 '1':
+                    'name': 'meta.expr.concat.nft'
                     'patterns': [{ 'include': '#concat_expr' }]
                 '2':
                     'name': 'support.class.type.nft'
             'patterns': [{ 'include': '#verdict_map_expr' }]
-            'end': '(?<=})'
-          }
-          { #verdict_map_stmt(leaf) (one line)
-            'match': '([^;]*)\\s+(vmap)([^;]*)'
-            'captures':
-                '1':
-                    'patterns': [{ 'include': '#concat_expr' }]
-                '2':
-                    'name': 'support.class.type.vmap.nft'
-                '3':
-                    'patterns': [{ 'include': '#verdict_map_expr' }]
+            'end': '(?<=;|$|})'
           }
         ]
     'verdict_map_expr':
@@ -426,7 +421,7 @@
             'name': 'meta.anonvmap.nft'
             'patterns': [
               { #verdict_map_list_expr
-                'match': '([^;,:]*)(:)([^;,:]*)'
+                'match': '([^;,:{}]+)(:)([^;,:{}\\.]+)'
                 'captures':
                     '1':
                         'patterns': [{ 'include': '#set_elem_expr' }]
@@ -447,6 +442,12 @@
             { 'include': '#map_stmt_expr' }
             { 'include': '#multiton_rhs_expr' }
             { 'include': '#primary_rhs_expr' }
+        ]
+    'expr':
+        'patterns': [
+            { 'include': '#concat_expr' }
+            { 'include': '#set_expr' }
+            { 'include': '#map_expr' }
         ]
     'rhs_expr':
         'patterns': [
@@ -494,8 +495,16 @@
           }
           { 'include': '#primary_rhs_expr' }
         ]
+    'basic_expr':
+        'patterns': [
+          {
+            'match': '[|^&]|<<|>>'
+            'name': 'keyword.operator.logic.nft'
+          }
+          { 'include': '#primary_expr' }
+        ]
     'range_rhs_expr':
-        'match': '(.*)(-)(.*)'
+        'match': '([^;\\s]+)(-)([^;\\s]+)'
         'captures':
             '1':
                 'patterns': [{ 'include': '#basic_rhs_expr' }]
@@ -506,6 +515,14 @@
     'concat_rhs_expr':
         'patterns': [
           { 'include': '#basic_rhs_expr' }
+          {
+            'match': '\\.'
+            'name': 'delimiter.concat.dot.nft'
+          }
+        ]
+    'concat_expr':
+        'patterns': [
+          { 'include': '#basic_expr' }
           {
             'match': '\\.'
             'name': 'delimiter.concat.dot.nft'
@@ -531,10 +548,80 @@
           }
           { 'include': '#symbol_expr'}
         ]
+    'primary_expr':
+        'patterns': [
+          { 'include': '#payload_expr' }
+          { 'include': '#exthdr_expr' }
+          { 'include': '#meta_expr' }
+          { #rt_expr
+            'match': '(rt)\\s+(classid|nexthop)'
+            'captures':
+                '1':
+                    'name': 'support.class.rt.nft'
+                '2':
+                    'name': 'support.function.rtkey.nft'
+          }
+          { 'include': '#ct_expr' }
+          { #numgen_expr
+            'match': '(numgen)\\s+(inc|random)\\s+(mod)\\s+(\\d+|0x[A-Fa-f0-9]+)\\b(?:\\s+(offset)\\s+(\\d+|0x[A-Fa-f0-9]+)\\b)?'
+            'captures':
+                '1':
+                    'name': 'support.class.numgen.nft'
+                '2':
+                    'name': 'support.function.numgen.nft'
+                '3':
+                    'name': 'support.function.mod.nft'
+                '4':
+                    'name': 'constant.numeric.numgen.modulo.nft'
+                '5':
+                    'name': 'support.function.offset.nft'
+                '6':
+                    'name': 'constant.numeric.numgen.offset.nft'
+          }
+          { #hash_expr
+            'match': '(jhash)\\s+([^;]+)\\s+(mod)\\s+(\\d+|0x[A-Fa-f0-9]+)\\s+(seed)\\s+(\\d+|0x[A-Fa-f0-9]+)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.jhash.nft'
+                '2':
+                    'patterns': [{ 'include': '#expr' }]
+                '3':
+                    'name': 'support.function.mod.nft'
+                '4':
+                    'name': 'constant.numeric.hash.modulo.nft'
+                '5':
+                    'name': 'support.function.seed.nft'
+                '6':
+                    'name': 'constant.numeric.hash.seed.nft'
+          }
+          { #fib_expr
+            'match': '(fib)\\s+(?:([sd]addr|mark|[oi]if)\\s*(\\.)\\s*)*([sd]addr|mark|[oi]if)\\s+(oif|oifname|type)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.fib.nft'
+                '2':
+                    'name': 'support.function.fibflag.nft'
+                '3':
+                    'name': 'delimiter.dot.nft'
+                '4':
+                    'name': 'support.function.fibflag.nft'
+                '5':
+                    'name': 'support.function.fibresult.nft'
+          }
+          {
+            'begin': '\\('
+            'captures':
+                '0':
+                    'name': 'delimiter.parenthese.nft'
+            'end': '\\)'
+            'patterns': [{ 'include': '#basic_expr' }]
+          }
+          { 'include': '#symbol_expr' }
+        ]
     'symbol_expr':
         'patterns': [
           {
-            'match': '(@)([a-zA-Z_\\.][a-zA-Z0-9/\\-_\\.]*)'
+            'match': '(@)([a-zA-Z_\\.][a-zA-Z0-9/\\-_\\.]*)(?=\\s)'
             'name': 'meta.symbol_expr.nft'
             'captures':
                 '1':
@@ -542,8 +629,262 @@
                 '2':
                     'name': 'variable.other.nft'
           }
-          { 'include': '#string' }
           { 'include': '#variable_expr'}
+          { 'include': '#string' }
+        ]
+    'payload_expr':
+        'patterns': [
+          {
+            'match': '(@)\\s*(ll|nh|th)\\s*(,)\\s*(\\d+|0[xX][A-Fa-f0-9]+)\\s*(,)\\s*(\\d+|0[xX][A-Fa-f0-9]+)\\b'
+            'captures':
+                '1':
+                    'name': 'support.function.payload.nft'
+                '2':
+                    'name': 'support.type.payload.nft'
+                '3':
+                    'name': 'delimiter.comma.nft'
+                '4':
+                    'name': 'constant.numeric.payloadstart.nft'
+                '5':
+                    'name': 'delimiter.comma.nft'
+                '6':
+                    'name': 'constant.numeric.payloadlen.nft'
+          }
+          {
+            'match': '(ether)\\s+(saddr|daddr|type)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.ether.nft'
+                '2':
+                    'name': 'support.function.etherhdr.nft'
+          }
+          {
+            'match': '(vlan)\\s+(id|cfi|pcp|type)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.vlan.nft'
+                '2':
+                    'name': 'support.function.vlanhdr.nft'
+          }
+          {
+            'match': '(arp)\\s+([hp]type|[hp]len|operation)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.arp.nft'
+                '2':
+                    'name': 'support.function.arphdr.nft'
+          }
+          {
+            'match': '(ip)\\s+(version|hdrlength|dscp|ecn|length|id|frag-off|ttl|protocol|checksum|[sd]addr)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.ip.nft'
+                '2':
+                    'name': 'support.function.iphdr.nft'
+          }
+          {
+            'match': '(icmp)\\s+(type|code|checksum|id|seq|gateway|mtu)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.icmp.nft'
+                '2':
+                    'name': 'support.function.icmphdr.nft'
+          }
+          {
+            'match': '(ip6)\\s+(version|dscp|ecn|flowlabel|length|nexthdr|hoplimit|[sd]addr)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.ip6.nft'
+                '2':
+                    'name': 'support.function.ip6hdr.nft'
+          }
+          {
+            'match': '(icmp6)\\s+(type|code|checksum|param-problem|mtu|id|seq|max-delay)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.icmp6.nft'
+                '2':
+                    'name': 'support.function.icmp6hdr.nft'
+          }
+          {
+            'match': '(ah)\\s+(nexthdr|hdrlength|reserved|spi|seq)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.ah.nft'
+                '2':
+                    'name': 'support.function.ahhdr.nft'
+          }
+          {
+            'match': '(esp)\\s+(spi|seq)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.esp.nft'
+                '2':
+                    'name': 'support.function.esphdr.nft'
+          }
+          {
+            'match': '(comp)\\s+(nexthdr|flags|cpi)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.comp.nft'
+                '2':
+                    'name': 'support.function.comphdr.nft'
+          }
+          {
+            'match': '(udp)\\s+([sd]port|length|checksum)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.udp.nft'
+                '2':
+                    'name': 'support.function.udphdr.nft'
+          }
+          {
+            'match': '(udplite)\\s+([sd]port|csumcov|checksum)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.udplite.nft'
+                '2':
+                    'name': 'support.function.udplitehdr.nft'
+          }
+          {
+            'match': '(tcp)\\s+([sd]port|seq|ackseq|doff|reserved|flags|window|checksum|urgptr)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.tcp.nft'
+                '2':
+                    'name': 'support.function.tcphdr.nft'
+          }
+          {
+            'match': '(dccp)\\s+([sd]port|type)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.dccp.nft'
+                '2':
+                    'name': 'support.function.dccphdr.nft'
+          }
+          {
+            'match': '(sctp)\\s+([sd]port|vtag|checksum)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.sctp.nft'
+                '2':
+                    'name': 'support.function.sctphdr.nft'
+          }
+        ]
+    'exthdr_expr':
+        'patterns': [
+          {
+            'match': '(hbh)\\s+(nexthdr|hdrlength)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.hbh.nft'
+                '2':
+                    'name': 'support.function.hbhhdr.nft'
+          }
+          {
+            'match': '(rt)\\s+(nexthdr|hdrlength|type|seg-left)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.rt.nft'
+                '2':
+                    'name': 'support.function.rthdr.nft'
+          }
+          {
+            'match': '(rt0)\\s+(\\[)\\s*(\\d+|0[xX][A-Fa-f0-9]+)\\s*(\\])\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.rt0.nft'
+                '2':
+                    'name': 'delimiter.bracket.nft'
+                '3':
+                    'name': 'support.function.rt0hdr.nft'
+                '4':
+                    'name': 'delimiter.bracket.nft'
+          }
+          {
+            'match': '(rt2)\\s+(addr)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.rt2.nft'
+                '2':
+                    'name': 'support.function.rt2hdr.nft'
+          }
+          {
+            'match': '(frag)\\s+(nexthdr|reserved|frag-off|reserved2|more-fragments|id)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.frag.nft'
+                '2':
+                    'name': 'support.function.fraghdr.nft'
+          }
+          {
+            'match': '(dst)\\s+(nexthdr|hdrlength)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.dst.nft'
+                '2':
+                    'name': 'support.function.dsthdr.nft'
+          }
+          {
+            'match': '(mh)\\s+(nexthdr|hdrlength|type|reserved|checksum)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.mh.nft'
+                '2':
+                    'name': 'support.function.mhhdr.nft'
+          }
+        ]
+    'meta_expr':
+        'patterns': [
+          {#meta_key_qualified
+            'match': '(meta)\\s+("[^"]*"|[^; ]+)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.meta.nft'
+                '2':
+                    'patterns':[
+                      {
+                        'match': '(length|protocol|priority|random)\\b'
+                        'name': 'support.function.metakey.qualified.nft'
+                      }
+                      { 'include': '#meta_key_unqualified' }
+                      { 'include': '#string' }
+                    ]
+          }
+          { 'include': '#meta_key_unqualified' }
+        ]
+    'meta_key_unqualified':
+        'match': '(mark|(?:iif|oif)(?:|type|name|group)|sk(?:uid|gid)|nftrace|rtclassid|[io]bridport|pkttype|cpu|cgroup)\\b'
+        'name': 'support.function.metakey.unqualified.nft'
+    'ct_expr':
+        'patterns': [
+          {
+            # known ct keys (src/ct.c) as of 0a47216feab142ec56e7351b68cb33504615c4fd:
+            # state|direction|status|mark|expiration|helper|l3proto|saddr|daddr|protocol|proto-src|proto-dst|label|bytes|packets
+            'match': '(ct)\\s+(state|direction|status|mark|expiration|helper|l3proto|[sd]addr|protocol|proto-(?:src|dst)|label|bytes|packets)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.ct.nft'
+                '2':
+                    'name': 'support.function.ctkey.nft'
+          }
+          {
+            'match': '(ct)\\s+(original|reply)\\s+([sd]addr|l3proto|protocol|proto-(?:src|dst)|bytes|packets)\\b'
+            'captures':
+                '1':
+                    'name': 'support.class.ct.nft'
+                '2':
+                    'name': 'support.constant.ctdir.nft'
+                '3':
+                    'name': 'support.function.ctkey.nft'
+          }
+        ]
+    'match_stmt': #==relational_expr
+        'patterns': [
+          { 'include': '#expr' }
+          { 'include': '#relational_op' }
+          { 'include': '#list_rhs_expr' }
+          { 'include': '#rhs_expr' }
         ]
     'variable_expr':
         'match': '(\\$)([-_\\w]+)'
@@ -558,15 +899,15 @@
           { 'include': '#ipv6addr' }
           { 'include': '#ipv4addr' }
           {
-            'match': '"[^"]*"'
+            'match': '\\b"[^"]*"'
             'name': 'string.quoted.double'
           }
           {
-            'match': '[a-zA-Z_\\.][a-zA-Z0-9/\\-_\\.]*(\\*|\\\\*)'
+            'match': '\\b[a-zA-Z_\\.][a-zA-Z0-9/\\-_\\.]*(\\*|\\\\*)'
             'name': 'string.other.nft'
           }
           {
-            'match': '[a-zA-Z_\\.][a-zA-Z0-9/\\-_\\.]*'
+            'match': '\\b[a-zA-Z_\\.][a-zA-Z0-9/\\-_\\.]*'
             'name': 'string.unquoted.nft'
           }
         ]
@@ -633,9 +974,9 @@
         ]
     'set_elem_expr':
         'patterns': [
+          { 'include': '#concat_rhs_expr' }
           { 'include': '#multiton_rhs_expr' }
           { 'include': '#set_elem_option' }
-          { 'include': '#concat_rhs_expr' }
         ]
     'set_elem_option':
         'patterns': [
