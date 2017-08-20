@@ -745,7 +745,8 @@
           { 'include': '#primary_expr' }
         ]
     'range_rhs_expr':
-        'match': '([^;\\s]+)(-)([^;\\s]+)'
+        'match': '([^;\\s\\{,]+\\s?)(-)(\\s?[^;\\s\\},]+)'
+        'name': 'meta.parser.range.nft'
         'captures':
             '1':
                 'patterns': [{ 'include': '#basic_rhs_expr' }]
