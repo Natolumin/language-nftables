@@ -475,6 +475,15 @@
                                 'name': 'constant.numeric.countervalue.nft'
                     }]
           }
+          { #comment_spec
+            'match': '(comment)\\s+("[^"]+"|[a-zA-Z_\\.][a-zA-Z0-9/\\-_\\.]*)'
+            'name': 'meta.stmt.comment.nft'
+            'captures':
+                '1':
+                    'name': 'keyword.other.comment.nft'
+                '2':
+                    'name': 'support.quoted.string.comment.nft'
+          }
           { #log_stmt
             'match': '(log)(?:\\s+(prefix\\s+(?:"[^"]+"|[a-zA-Z_\\.][a-zA-Z0-9/\\-_\\.]*\\b)|(group|snaplen|queue-threshold)\\s+(\\d+|0[xX][A-Fa-f0-9]+)|level\\s+(?:emerg|alert|crit|err|warn|notice|info|debug)|flags\\s+(all|skuid|ether|ip\\s+options|tcp\\s+(sequence|options|\\s*,\\s*)*))*)'
             'name': 'meta.stmt.log'
