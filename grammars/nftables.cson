@@ -99,7 +99,7 @@
                     'patterns': [{'include': '#chain_spec'}]
                 '3':
                     'name': 'delimiter.brace.nft'
-            'patterns': [{'include': '#table_block'}]
+            'patterns': [{'include': '#chain_block'}]
             'name': 'meta.command.add.chain.nft'
             'end': '}'
             'endCaptures':
