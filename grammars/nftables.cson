@@ -697,7 +697,7 @@
             { 'include': '#set_expr' }
         ]
     'map_stmt_expr':
-        'begin': '(.*)\\s+(map)\\s+'
+        'begin': '(.*)\\s+(map)\\s*{'
         'beginCaptures':
             '1':
                 'patterns': [
@@ -709,7 +709,9 @@
                 ]
             '2':
                 'name': 'storage.type.map.nft'
-            'end': '(?=}|;|(?!\\\\)\\n)'
+        'end': '}|(?=;|(?!\\\\)\\n)'
+        'patterns': [{ 'include': '#rhs_expr' }]
+        'name': 'meta.expr.map.nft'
     'multiton_rhs_expr':
         'patterns': [
           { 'include': '#prefix_rhs_expr' }
@@ -1218,7 +1220,7 @@
           { 'include': '#set_elem_expr' }
           { 'include': '#set_expr' }
           {
-            'match': '([^,;]+)\\s+(:)\\s+([^,;]+)'
+            'match': '([^,;:{]+)\\s*(:)\\s*([^,;:}]+)'
             'captures':
                 '1':
                     'patterns': [{ 'include': '#set_elem_expr' }]
