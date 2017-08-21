@@ -597,7 +597,26 @@
                 '4':
                     'patterns': [{ 'include': '#expr' }]
           }
-          { 'include': '#masq_stmt' }
+          { #masq_stmt
+            # This matches greedily until the end of the statement, but that's fine since masquerade is a terminal statement
+            'match': '(masquerade)(?:(\\s+(?:random|fully-random|persistent|\\s*,))*\\s+(to)\\s+(:)([^;\\n]+))?'
+            'captures':
+               '1':
+                   'name': 'keyword.other.masquerade.nft'
+               '2':
+                   'name': 'meta.stmt.nfnatflags.nft'
+                   'patterns': [{ 'include': '#nf_nat_flags'}]
+               '3':
+                   'name': 'keyword.other.to.nft'
+               '4':
+                   'name': 'delimiter.colon.nft'
+               '5':
+                   'name': 'meta.stmt.nfnatdest.nft'
+                   'patterns': [
+                     { 'include': '#nf_nat_flags' }
+                     { 'include': '#stmt_expr' }
+                   ]
+          }
           { 'include': '#redir_stmt' }
           { 'include': '#dup_stmt' }
           { 'include': '#fwd_stmt' }
@@ -1108,6 +1127,17 @@
     'meta_key_unqualified':
         'match': '(mark|(?:iif|oif)(?:|type|name|group)|sk(?:uid|gid)|nftrace|rtclassid|[io]briport|pkttype|cpu|cgroup)\\b'
         'name': 'support.function.metakey.unqualified.nft'
+    'nf_nat_flags':
+        'patterns': [
+           {
+             'match': 'random|fully-random|persistent'
+             'name': 'string.unquoted.nfnatflags.nft'
+           }
+           {
+             'match': ','
+             'name': 'delimiter.comma.set.nft'
+           }
+        ]
     'ct_expr':
         'patterns': [
           {
